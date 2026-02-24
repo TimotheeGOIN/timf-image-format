@@ -24,3 +24,4 @@ Those are the next things I want to improve or implement :
 - improve the timf vizualizer (resizable window mainly)  
 
 I'm working one the file signature (this texte isn't finished yet)
+The signature will include a magic string, the width and length of the image (and maybe if the image contains transparents parts).
