@@ -23,18 +23,18 @@ def compress_timf(timf_path: str, save: bool=False, overwrite: bool=False, debug
 
     compressed_data = ""
     
-    # analyse the row to find sequences of repeated pixels and replace them with a compressed format
-    # a marker to indicate the start of a compressed sequence is of the form : xnnnnnnn where n is the number of reps (if n isn't that long then it's 0-padded)
+    # analyze the row to find sequences of repeated pixels and replace them with a compressed format
+    # a marker to indicate the start of a compressed sequence is of the form: xnnnnnnn where n is the number of reps (if n isn't that long, then it's 0-padded)
 
     if debug_prints : print("Starting compression...")
 
-    # cycle trough the row 8 chars by 8 chars
+    # cycle through the row 8 chars by 8 chars
     for i in range(len(timf_file_data)//8):
 
         # get the value of each item (pixel color) in the row
         hex_value = timf_file_data[i*8:(i+1)*8]
 
-        # if the hex value is the same as the last value, increase the sequence lenght by 1
+        # if the hex value is the same as the last value, increase the sequence length by 1
         if sequence_start_value == hex_value:
             sequence_lenght += 1
         else:
