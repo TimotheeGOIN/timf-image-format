@@ -25,3 +25,5 @@ Those are the next things I want to improve or implement :
 
 I'm working one the file signature (this texte isn't finished yet)
 The signature will include a magic string, the width and length of the image (and maybe if the image contains transparents parts).
+
+-- Right now I'm working on merging the converter in only one file (converter + compressor into converter) and make the compression not optional
