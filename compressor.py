@@ -103,7 +103,7 @@ def uncompress_timf(timf_path: str, save: bool=False, overwrite: bool=False, deb
 
     if debug_prints : print("Starting compression...")
     
-    # cycle trough the row 8 chars by 8 chars
+    # cycle through the row 8 chars by 8 chars
     for i in range(len(timf_file_data)//8):
 
         # get the value of each item (pixel color) in the row
