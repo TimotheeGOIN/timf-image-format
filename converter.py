@@ -10,10 +10,11 @@ from utils import *
 image_file_path = "C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png"
 
 
-def get_timf_data_from_file(timf_file_path: str) -> str | None:
-    """ This function loads the data in a .timf file and returns it. Return None if the function failed.
-    :param timf_file_path: string that contains path to the .timf file we want the data from
-    :return: return the data got in the .timf file, or None if it failed
+def get_timf_data_from_timf_file(timf_file_path: str) -> str | None:
+    """
+    This function loads the data in a .timf file and returns it. Return None if the function failed.
+    :param timf_file_path: String that contains path to the .timf file we want the data from
+    :return: Return the data got in the .timf file, or None if it failed
     """
 
     # check if the file exists
@@ -32,24 +33,39 @@ def get_timf_data_from_file(timf_file_path: str) -> str | None:
     return timf_file_data
 
 
+def get_pixels_from_png(png_path: str) -> list[tuple[int, int, int, int]] | None:
+    """
+    This function simply extracts the pixels and their values from a png file and returns it
+    in a list of tuples.
+    :param pgn_path: The path to the png image we want to get the pixel values from;
+    :return: Returns a list of tuples (list of pixels values)
+    """
+
+    # check if the file exists
+    if not os.path.exists(pgn_path):
+        return None  # the timf file doesn't exist
+
+    png_img = Image.open(png_path).convert("RGBA")
+
+    # NOT FINISHED
+
+    return None
 
 
-
-
-# in first those 2 functions are the compression and the uncompression ones
+# these 2 functions are the compression and the uncompression ones
 def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
     """
     This function compresses raw .timf data and returns it. Also returns a boolean indicating if
     the compression was successful. If not, it returns False and the raw data is returned.
     If the compression fails, it returns the raw data instead of the compressed.
 
-    Here, the compression is simple, if there are 3 or more repeated values in a rox, it just
+    Here, the compression is straightforward, if there are 3 or more repeated values in a rox, it just
     replaces them with the number of repetitions and the repeated value. For example, if
     the value 1f2e3d4c is repeated 27 times, this will be replaced with x000001b1f2e3d4c (1b in hex is 27 in decimal).
     The compression is better explained in the README.md file in the GitHub repository.
-    :param timf_data: this is the .timf that will be compressed
-    :param debug_prints: enables debug prints in the console
-    :return: returns the success of the compression and the compressed data (or raw if fail)
+    :param timf_data: This is the .timf that will be compressed
+    :param debug_prints: Enables debug prints in the console
+    :return: Returns the success of the compression and the compressed data (or raw if fail)
     """
 
     # initiate the hex value to be able to compare the first pixel to it
@@ -105,9 +121,9 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
     the decompression was successful. If not, it returns False and the compressed data is returned.
     If the decompression fails, it returns the compressed data instead of the uncompressed.
 
-    :param timf_data: this is the compressed .timf that will be uncompressed
-    :param debug_prints: enables debug prints in the console
-    :return: returns the success of the decompression and the decompressed data (or compressed if fail)
+    :param timf_data: This is the compressed .timf that will be uncompressed
+    :param debug_prints: Enables debug prints in the console
+    :return: Returns the success of the decompression and the decompressed data (or compressed if fail)
     """
 
     uncompressed_data = ""
@@ -143,5 +159,38 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
 
     # return uncompressed data if everything went right
     return True, uncompressed_data
+
+
+def convert_png_to_timf(png_path: str, debug_prints: bool=False) -> bool:
+    """
+    This function converts a png file to the timf format. It directly writes out the file in a folder,
+    which can be specified otherwise it's in the same folder as the png file.
+    :param png_path: The png file that will be converted into a timf file.
+    :param debug_prints: Enables debug prints in the console
+    :return: Returns a boolean indicating the success or not of this convertion.
+    """
+
+    # get pixels values from the png
+
+
+    # convert these pixels into .timf raw data
+
+
+    # compress the .timf raw data
+
+
+    # create the .timf file header
+
+
+    # merge the header with the .timf data (compressed)
+
+
+    # finish up the file and write it on disk
+
+
+
+
+
+
 
 
