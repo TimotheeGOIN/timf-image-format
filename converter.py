@@ -33,23 +33,34 @@ def get_timf_data_from_timf_file(timf_file_path: str) -> str | None:
     return timf_file_data
 
 
-def get_pixels_from_png(png_path: str) -> list[tuple[int, int, int, int]] | None:
+def get_pixels_from_png(png_path: str) -> list[tuple[int, ...]] | None:
     """
     This function simply extracts the pixels and their values from a png file and returns it
     in a list of tuples.
-    :param pgn_path: The path to the png image we want to get the pixel values from;
+    :param png_path: The path to the png image we want to get the pixel values from;
     :return: Returns a list of tuples (list of pixels values)
     """
 
     # check if the file exists
-    if not os.path.exists(pgn_path):
+    if not os.path.exists(png_path):
         return None  # the timf file doesn't exist
+
+    pixels_list = []
 
     png_img = Image.open(png_path).convert("RGBA")
 
-    # NOT FINISHED
+    for y in range(png_img.height): # MAY BE IMPROVED by converting in hex directly in this loop
+        for x in range(png_img.width): # instead of cycling again after
 
-    return None
+            pixels_list.append(png_img.getpixel((x, y)))
+
+    return pixels_list
+
+
+def create_timf_header() -> str:
+
+    pass
+
 
 
 # these 2 functions are the compression and the uncompression ones
@@ -171,15 +182,22 @@ def convert_png_to_timf(png_path: str, debug_prints: bool=False) -> bool:
     """
 
     # get pixels values from the png
-
+    image_pixels = get_pixels_from_png(png_path)
 
     # convert these pixels into .timf raw data
+    raw_timf_data = ""
+    for pixel in image_pixels:
 
+        hex_pixel = rgba_to_hex(pixel)
+        hex_pixel = format_hex_for_timf(hex_pixel)
+
+        raw_timf_data += hex_pixel
 
     # compress the .timf raw data
-
+    compressed_timf_data = compress_timf_data(raw_timf_data)
 
     # create the .timf file header
+
 
 
     # merge the header with the .timf data (compressed)
