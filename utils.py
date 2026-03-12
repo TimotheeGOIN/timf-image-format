@@ -46,7 +46,7 @@ def hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:
 
 def format_hex_for_timf(hex_value: str) -> str: # find a name for my file format
     """ This function formats a hex value to the format used in .timf files.
-    This consists in removing the # and explicit the alpha value.
+    This consists of removing the # and explicit the alpha value.
     :return: A clean str, for example, #rrggbb -> rrggbbaa.
     """
 
