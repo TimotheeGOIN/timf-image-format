@@ -8,6 +8,8 @@ from utils import *
 """
 
 image_file_path = "C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png"
+magic_number = "bestformat" # obviously not
+# [98, 101, 115, 116, 102, 111, 114, 109, 97, 116] in bytes
 
 
 def get_timf_data_from_timf_file(timf_file_path: str) -> str | None:
@@ -57,9 +59,27 @@ def get_pixels_from_png(png_path: str) -> list[tuple[int, ...]] | None:
     return pixels_list
 
 
-def create_timf_header() -> str:
+def create_timf_header(png_path: str) -> str:
 
-    pass
+    png_img = Image.open(png_path).convert("RGBA")
+
+    width_hex, height_hex = hex(png_img.width)[2:], hex(png_img.height)[2:] # [2:] to get rid of the 0x
+
+    # then 0-padding these values to ensure they are 8 chars-long
+    width_hex, height_hex = width_hex.zfill(8), height_hex.zfill(8)
+
+    magic_number_hex = ""  # the magic number converted in hexadecimal
+
+    # get the magic number (word actually) in bytes
+    magic_number_bytes = list(magic_number.encode())
+
+    for byte in magic_number_bytes:
+        magic_number_hex += hex(byte)[2:] # adding [2:] to get rid of the 0x in front of the hex value
+
+
+
+
+
 
 
 
@@ -205,9 +225,13 @@ def convert_png_to_timf(png_path: str, debug_prints: bool=False) -> bool:
 
     # finish up the file and write it on disk
 
+a = int("1100001", base=2)
+print(a)
+print(bin(97))
 
-
-
+b = "bestformat".encode("utf-8")
+print(b)
+print(list(b))
 
 
 
