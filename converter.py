@@ -60,21 +60,34 @@ def get_pixels_from_png(png_path: str) -> list[tuple[int, ...]] | None:
 
 
 def create_timf_header(png_path: str) -> str:
+    """
+    This function creates the timf file's header and returns it as a str. The header contains in
+    this order : the magic number, the width and the height of the image. So the header is and
+    must be 36 characters-long (magic number: 20 chars for 10 bytes, width/height: 8 chars each so 16 chars).
+    :param png_path: The path to the image that we want to create its timf header
+    :return: The header as a string.
+    """
 
     png_img = Image.open(png_path).convert("RGBA")
 
-    width_hex, height_hex = hex(png_img.width)[2:], hex(png_img.height)[2:] # [2:] to get rid of the 0x
+    timf_header = ""
+
+    magic_number_hex = ""  # the magic number converted in hexadecimal
+    # get the magic number (word actually) in bytes
+    magic_number_bytes = list(magic_number.encode())
+
+    for byte in magic_number_bytes: # convert each byte in hex
+        magic_number_hex += hex(byte)[2:] # adding [2:] to get rid of the 0x in front of the hex value
+
+    # convert the image's width and height in hexadecimal
+    width_hex, height_hex = hex(png_img.width)[2:], hex(png_img.height)[2:]  # [2:] to get rid of the 0x
 
     # then 0-padding these values to ensure they are 8 chars-long
     width_hex, height_hex = width_hex.zfill(8), height_hex.zfill(8)
 
-    magic_number_hex = ""  # the magic number converted in hexadecimal
 
-    # get the magic number (word actually) in bytes
-    magic_number_bytes = list(magic_number.encode())
 
-    for byte in magic_number_bytes:
-        magic_number_hex += hex(byte)[2:] # adding [2:] to get rid of the 0x in front of the hex value
+
 
 
 
