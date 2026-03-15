@@ -97,6 +97,37 @@ def create_timf_header(png_path: str) -> str | None:
     return timf_header
 
 
+def extract_info_from_timf_header(header: str) -> tuple[str, int, int]:
+    """
+    This function extracts and returns the information contained in the timf header passed.
+    The timf header contains the magic number, the width and height of the image
+    :param header: The header we want to get the information
+    :return: Returns a tuple containing in this order: magic number, width, height.
+    """
+
+    # extracting the magic number
+    magic_number_hex = header[:20]
+    magic_number_bytes = []
+    reconstructed_magic_number = ""
+
+    # get each byte (chars two by two in hexa) and convert each byte from hexa to decimal
+    for i in range(0, len(magic_number_hex), 2):
+        magic_number_bytes.append(int(magic_number_hex[i:i + 2], 16))
+
+    # finally convert these bytes in a string
+    for byte in magic_number_bytes:
+        reconstructed_magic_number += chr(byte)
+
+    # then extracting the width and height
+    width = int(header[20:28], 16) # 20th to 27th chars are the width
+    height = int(header[28:36], 16)# 28th to 35th chars are the height
+
+    # return the extracted info in a tuple
+    return (reconstructed_magic_number,
+            width,
+            height)
+
+
 # these 2 functions are the compression and the uncompression ones
 def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
     """
@@ -260,6 +291,40 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
     return True
 
 
+def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: bool=False) -> bool:
+    """
+    This function converts a timf file to the png format. It directly writes out the file in a folder,
+    which can be specified otherwise it's in the same folder as the png file.
+    :param timf_path: The timf file that will be converted into a png file.
+    :param overwrite: If another png file with the same name already exists, if True, it overwrites this file;
+    if False, it just doesn't write out the file on disk.
+    :param debug_prints: Enables debug prints in the console
+    :return: Returns a boolean indicating the success or not of this convertion.
+    """
+
+    # check if the file exists
+    if not os.path.exists(timf_path):
+        raise FileNotFoundError
+
+    with open(timf_path, "r") as file:
+        timf_file_data = file.read()
+
+    # separate the header from the data
+    header = timf_file_data[:36] # header is the 36 first chars (0 to 35th)
+    compressed_timf_data = timf_file_data[37:]
+
+    # verifications like the magic word
+    magic_number_hex = header[:20]
+    magic_number_bytes = []
+    reconstructed_magic_number = ""
+
+    # get each byte (chars two by two in hexa) and convert each byte from hexa to decimal
+    for i in range(0, len(magic_number_hex), 2):
+        magic_number_bytes.append(int(magic_number_hex[i:i+2], 16))
+
+    # finally convert these bytes in a string
+    for byte in magic_number_bytes:
+        reconstructed_magic_number += chr(byte)
 
 
 
@@ -267,17 +332,42 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
 
 
 
-"""a = int("1100001", base=2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a = int("1100001", base=2)
 print(a)
 print(bin(97))
 
+print()
 b = "bestformat".encode("utf-8")
 print(b)
 print(list(b))
-"""
 
-h = create_timf_header("C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png")
+
+"""h = create_timf_header("C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png")
 print(h)
 print(len(h))
 
+print(int("3F", 16))"""
 
+print()
+n = 97
+c = chr(n)
+print(c)
+
+print(int("3F", 16))
+print(int("0003F", 16))
