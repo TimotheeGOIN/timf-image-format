@@ -314,60 +314,56 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
     compressed_timf_data = timf_file_data[37:]
 
     # verifications like the magic word
-    magic_number_hex = header[:20]
-    magic_number_bytes = []
-    reconstructed_magic_number = ""
+    reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
 
-    # get each byte (chars two by two in hexa) and convert each byte from hexa to decimal
-    for i in range(0, len(magic_number_hex), 2):
-        magic_number_bytes.append(int(magic_number_hex[i:i+2], 16))
+    if reconstructed_magic_number != magic_number:
+        raise Exception("The header in this timf file doesn't conform or is corrupted.")
 
-    # finally convert these bytes in a string
-    for byte in magic_number_bytes:
-        reconstructed_magic_number += chr(byte)
+    # uncompressing the data to be able to use it
+    raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]
 
+    # recreate a png image using PIL
+    png_img = Image.new("RGBA", (width, height))
 
+    for y in range(height):
+        for x in range(width):
 
+            # k is the progression while looking through the raw timf data
 
+            k = y*width + x
 
+            # get pixel value 8 chars by 8 chars (in hex) and convert in decimal
+            hex_pixel = raw_timf_data[x*8:(x+1)*8]
 
+    for i in range(0, len(raw_timf_data), 8): # cycle through raw timf data 8 by 8 characters
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # get the hex value of the pixel and convert it in rgba in decimal
+        pixel_hex = raw_timf_data[i:i+8]
+        r, g, b, a = (int(pixel_hex[0:2]),
+                      int(pixel_hex[2:4]),
+                      int(pixel_hex[4:6]),
+                      int(pixel_hex[6:8]))
 
 
 
-a = int("1100001", base=2)
-print(a)
-print(bin(97))
-
-print()
-b = "bestformat".encode("utf-8")
-print(b)
-print(list(b))
 
 
-"""h = create_timf_header("C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png")
-print(h)
-print(len(h))
 
-print(int("3F", 16))"""
 
-print()
-n = 97
-c = chr(n)
-print(c)
 
-print(int("3F", 16))
-print(int("0003F", 16))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
