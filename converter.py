@@ -59,13 +59,13 @@ def get_pixels_from_png(png_path: str) -> list[tuple[int, ...]] | None:
     return pixels_list
 
 
-def create_timf_header(png_path: str) -> str:
+def create_timf_header(png_path: str) -> str | None:
     """
     This function creates the timf file's header and returns it as a str. The header contains in
     this order : the magic number, the width and the height of the image. So the header is and
     must be 36 characters-long (magic number: 20 chars for 10 bytes, width/height: 8 chars each so 16 chars).
     :param png_path: The path to the image that we want to create its timf header
-    :return: The header as a string.
+    :return: The header as a string. Or None if something went wrong
     """
 
     png_img = Image.open(png_path).convert("RGBA")
@@ -85,15 +85,16 @@ def create_timf_header(png_path: str) -> str:
     # then 0-padding these values to ensure they are 8 chars-long
     width_hex, height_hex = width_hex.zfill(8), height_hex.zfill(8)
 
+    # merge all in the final header
+    timf_header += magic_number_hex
+    timf_header += width_hex
+    timf_header += height_hex
 
+    # check if the header is really 36 chars-long
+    if len(timf_header) != 36:
+        return None
 
-
-
-
-
-
-
-
+    return timf_header
 
 
 # these 2 functions are the compression and the uncompression ones
@@ -205,7 +206,7 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
     return True, uncompressed_data
 
 
-def convert_png_to_timf(png_path: str, debug_prints: bool=False) -> bool:
+def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool=False) -> bool:
     """
     This function converts a png file to the timf format. It directly writes out the file in a folder,
     which can be specified otherwise it's in the same folder as the png file.
@@ -227,25 +228,56 @@ def convert_png_to_timf(png_path: str, debug_prints: bool=False) -> bool:
         raw_timf_data += hex_pixel
 
     # compress the .timf raw data
-    compressed_timf_data = compress_timf_data(raw_timf_data)
+    compression_success, compressed_timf_data = compress_timf_data(raw_timf_data)
 
     # create the .timf file header
-
-
+    timf_header = create_timf_header(png_path)
 
     # merge the header with the .timf data (compressed)
+    timf_file_data = timf_header + compressed_timf_data
+
+    # create the .timf file path
+    folder_path = os.path.dirname(png_path)
+    png_file_name = os.path.splitext(os.path.basename(png_path))[0]  # get the filename and then get it without extension
+    timf_file_path = f"{folder_path}/{png_file_name}.timf"
+
+    # write the file on disk
+    try:
+        with open(timf_file_path, "x") as file:
+            file.write(timf_file_data)
+
+    except FileExistsError:
+        # if the file already exists, raise error if overwrite isn't allowed, otherwise overwrite the file with the same name
+        if not overwrite:
+            raise Exception(f"Error: The file {timf_file_path} already exists.")
+
+        else:
+            with open(timf_file_path, "w") as file:
+                file.write(timf_file_data)
+
+    if debug_prints: print("Done !")
+
+    return True
 
 
-    # finish up the file and write it on disk
 
-a = int("1100001", base=2)
+
+
+
+
+
+
+"""a = int("1100001", base=2)
 print(a)
 print(bin(97))
 
 b = "bestformat".encode("utf-8")
 print(b)
 print(list(b))
+"""
 
-
+h = create_timf_header("C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png")
+print(h)
+print(len(h))
 
 
