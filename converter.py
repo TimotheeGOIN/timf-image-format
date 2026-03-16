@@ -258,6 +258,8 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
 
         raw_timf_data += hex_pixel
 
+    if debug_prints: print("Starting conversion...")
+
     # compress the .timf raw data
     compression_success, compressed_timf_data = compress_timf_data(raw_timf_data)
 
@@ -267,10 +269,14 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
     # merge the header with the .timf data (compressed)
     timf_file_data = timf_header + compressed_timf_data
 
+    if debug_prints: print("Conversion finished.")
+
     # create the .timf file path
     folder_path = os.path.dirname(png_path)
     png_file_name = os.path.splitext(os.path.basename(png_path))[0]  # get the filename and then get it without extension
     timf_file_path = f"{folder_path}/{png_file_name}.timf"
+
+    if debug_prints: print(f"Writing .timf data to {timf_file_path}...")
 
     # write the file on disk
     try:
@@ -311,7 +317,7 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
 
     # separate the header from the data
     header = timf_file_data[:36] # header is the 36 first chars (0 to 35th)
-    compressed_timf_data = timf_file_data[37:]
+    compressed_timf_data = timf_file_data[36:]
 
     # verifications like the magic word
     reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
@@ -325,25 +331,40 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
     # recreate a png image using PIL
     png_img = Image.new("RGBA", (width, height))
 
-    for y in range(height):
-        for x in range(width):
-
-            # k is the progression while looking through the raw timf data
-
-            k = y*width + x
-
-            # get pixel value 8 chars by 8 chars (in hex) and convert in decimal
-            hex_pixel = raw_timf_data[x*8:(x+1)*8]
-
-    for i in range(0, len(raw_timf_data), 8): # cycle through raw timf data 8 by 8 characters
+    # cycle through raw timf data 8 by 8 characters
+    for i in range(len(raw_timf_data) // 8):
 
         # get the hex value of the pixel and convert it in rgba in decimal
-        pixel_hex = raw_timf_data[i:i+8]
-        r, g, b, a = (int(pixel_hex[0:2]),
-                      int(pixel_hex[2:4]),
-                      int(pixel_hex[4:6]),
-                      int(pixel_hex[6:8]))
+        pixel_hex = raw_timf_data[i*8:(i+1)*8]
+        rgba = hex_to_rgba(pixel_hex)
 
+        # get the x and y pos of the pixel
+        x = i % width   # i is the number of pixels placed, so x is th
+        y = i // width  # y position !!!!!!!!!!!!!!!!!!!!!
+
+        # place the pixel
+        png_img.putpixel((x, y), rgba)
+
+        if debug_prints: print(f"Row {y + 1}/{height} converted. That's {(y + 1) / height * 100:.2f}%.")
+
+    if debug_prints: print("Conversion finished.")
+
+    # create the .png file path
+    folder_path = os.path.dirname(timf_path)
+    timf_file_name = os.path.splitext(os.path.basename(timf_path))[0] # get the filename and then get it without extension
+    png_file_path = f"{folder_path}/{timf_file_name}.png"
+
+    if debug_prints: print(f"Saving .png image to {png_file_path})...")
+
+    png_img.save(png_file_path)
+
+    return True
+
+
+
+
+#print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.png", debug_prints=True))
+#print(convert_timf_to_png("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf", debug_prints=True))
 
 
 
