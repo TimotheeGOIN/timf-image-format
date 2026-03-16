@@ -4,6 +4,7 @@ This file contains some functions that are used in the converter.py and the timf
 Those are basic functions.
 """
 
+
 def rgba_to_hex(rgba: tuple[int, int, int, int]) -> str:
     """ Convert RGBA color to HEX format.
     Explanation of {:02x}:

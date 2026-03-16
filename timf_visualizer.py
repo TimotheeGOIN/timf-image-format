@@ -28,7 +28,7 @@ def get_timf_size(timf_path: str) -> tuple[int, int] | None:
     width = len(rows[0]) // 8 # each pixel is represented by 8 characters in hex (rrggbbaa)
     height = len(rows)
 
-    return (width, height)
+    return width, height
 
 window = pygame.display.set_mode(get_timf_size(file_to_show))
 
