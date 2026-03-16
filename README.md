@@ -19,11 +19,14 @@ because timf will be natively compressed (lossless compression)
 
 Those are the next things I want to improve or implement :
 
-- a signature for the timf file format (at the begining of the file)
 - eventually just have one file and not separated
 - improve the timf vizualizer (resizable window mainly)  
 
 I'm working one the file signature (this texte isn't finished yet)
 The signature will include a magic string, the width and length of the image (and maybe if the image contains transparents parts).
 
--- Right now I'm working on merging the converter in only one file (converter + compressor into converter) and make the compression not optional
+-- Steps of the .timf file format development:
+- The .timf has now a header containing a magic number (a string actually), the width and length of the image.
+- The converter.py file handle now all the convertion (with non-optional compression) from png to timf and vice versa.
+
+-- Right now I'm working on the vizualizer. To make it handle the new .timf file format (header and compressed data).
