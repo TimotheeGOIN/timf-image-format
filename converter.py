@@ -319,9 +319,10 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
     header = timf_file_data[:36] # header is the 36 first chars (0 to 35th)
     compressed_timf_data = timf_file_data[36:]
 
-    # verifications like the magic word
+    # extract information from the timf header
     reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
 
+    # verifications like the magic word
     if reconstructed_magic_number != magic_number:
         raise Exception("The header in this timf file doesn't conform or is corrupted.")
 
