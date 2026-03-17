@@ -6,7 +6,7 @@ I'll learn this by myself and by searching on the net.
 - This is an amateur repo, so the code may not be the clearest, not the most efficient and not the most protective neither. It may also contain some weird debug things for myself.
 - I try my best to do all of this myself and then I make reasearches on the net, understand what I read and not just copy-paste it.
 - About AIs, I try not using them directly because I want to think by myself. But I can use them to, for instance, helping me to understand a concept.
-- I'm also kinda new to the github sphere and know about all of its uses and techniques.
+- I'm also kinda new to the github sphere and so I don't know about all of its uses and techniques.
 
 Now the project itself :
 
