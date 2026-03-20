@@ -129,7 +129,7 @@ def extract_info_from_timf_header(header: str) -> tuple[str, int, int]:
 
 
 # these 2 functions are the compression and the uncompression ones
-def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
+def compress_timf_data(raw_timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
     """
     This function compresses raw .timf data and returns it. Also returns a boolean indicating if
     the compression was successful. If not, it returns False and the raw data is returned.
@@ -139,7 +139,7 @@ def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool
     replaces them with the number of repetitions and the repeated value. For example, if
     the value 1f2e3d4c is repeated 27 times, this will be replaced with x000001b1f2e3d4c (1b in hex is 27 in decimal).
     The compression is better explained in the README.md file in the GitHub repository.
-    :param timf_data: This is the .timf that will be compressed
+    :param raw_timf_data: This is the .timf that will be compressed
     :param debug_prints: Enables debug prints in the console
     :return: Returns the success of the compression and the compressed data (or raw if fail)
     """
@@ -156,10 +156,10 @@ def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool
     if debug_prints: print("Starting compression...")
 
     # cycle through the data 8 chars by 8 chars (32 bits by 32 bits)
-    for i in range(len(timf_data) // 8):
+    for i in range(len(raw_timf_data) // 8):
 
         # get the value of each unit (here a pixel color)
-        hex_value = timf_data[i * 8:(i+1) * 8]
+        hex_value = raw_timf_data[i * 8:(i + 1) * 8]
 
         # if the current hex value is the same as the last value (and so same as the first value in the current sequence)
         if sequence_first_value == hex_value:
@@ -182,8 +182,13 @@ def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool
 
             # show progress
             if debug_prints: print(
-                f"It's {i / (len(timf_data) // 8) * 100:.2f}% of the image that have been compressed.")
+                f"It's {i / (len(raw_timf_data) // 8) * 100:.2f}% of the image that have been compressed.")
 
+    # check if something last in memory and add it to the compressed data
+    if sequence_lenght >= 3:
+        compressed_data += f"x{sequence_lenght:07d}{sequence_first_value}"
+    else:
+        compressed_data += str(sequence_first_value) * sequence_lenght
 
     if debug_prints: print("Compression finished.")
 
@@ -191,13 +196,13 @@ def compress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool
     return True, compressed_data
 
 
-def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
+def uncompress_timf_data(compressed_timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
     """
     This function uncompresses compressed .timf data and returns it. Also returns a boolean indicating if
     the decompression was successful. If not, it returns False and the compressed data is returned.
     If the decompression fails, it returns the compressed data instead of the uncompressed.
 
-    :param timf_data: This is the compressed .timf that will be uncompressed
+    :param compressed_timf_data: This is the compressed .timf that will be uncompressed
     :param debug_prints: Enables debug prints in the console
     :return: Returns the success of the decompression and the decompressed data (or compressed if fail)
     """
@@ -208,10 +213,10 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
     if debug_prints: print("Starting decompression...")
 
     # cycle through the row 8 chars by 8 chars
-    for i in range(len(timf_data) // 8):
+    for i in range(len(compressed_timf_data) // 8):
 
         # get the value of each item (pixel color) in the row
-        hex_value = timf_data[i * 8:(i + 1) * 8]
+        hex_value = compressed_timf_data[i * 8:(i + 1) * 8]
 
         # if the hex value starts with x, it's a compressed sequence, and we need to uncompress it
         if hex_value.startswith("x"):
@@ -229,7 +234,7 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
 
         # show progress
         if debug_prints: print(
-            f"It's {i / (len(timf_data) // 8) * 100:.2f}% of the image that have been uncompressed.")
+            f"It's {i / (len(compressed_timf_data) // 8) * 100:.2f}% of the image that have been uncompressed.")
 
     if debug_prints: print("Decompression finished.")
 
@@ -242,6 +247,8 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
     This function converts a png file to the timf format. It directly writes out the file in a folder,
     which can be specified otherwise it's in the same folder as the png file.
     :param png_path: The png file that will be converted into a timf file.
+    :param overwrite: If another timf file with the same name already exists, if True, it overwrites this file;
+    if False, it just doesn't write out the file on disk.
     :param debug_prints: Enables debug prints in the console
     :return: Returns a boolean indicating the success or not of this convertion.
     """
@@ -285,12 +292,11 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
 
     except FileExistsError:
         # if the file already exists, raise error if overwrite isn't allowed, otherwise overwrite the file with the same name
-        if not overwrite:
-            raise Exception(f"Error: The file {timf_file_path} already exists.")
-
-        else:
+        if overwrite:
             with open(timf_file_path, "w") as file:
                 file.write(timf_file_data)
+        else:
+            raise Exception(f"Error: The file {timf_file_path} already exists.")
 
     if debug_prints: print("Done !")
 
@@ -362,30 +368,7 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
     return True
 
 
+print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.png", debug_prints=False))
 
-
-#print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.png", debug_prints=True))
-#print(convert_timf_to_png("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf", debug_prints=True))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print(convert_timf_to_png("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf", debug_prints=False))
 
