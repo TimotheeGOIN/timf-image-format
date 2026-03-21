@@ -120,16 +120,6 @@ def draw_pixel(surface: pygame.Surface, x: int, y: int, color: tuple[int, int, i
 def draw_image(surface: pygame.Surface, size: tuple[int, int], rgba_values: list[tuple[int, int, int, int]]):
     """ Draw the image represented by the list of RGBA values. """
 
-    """x, y = 0, 0
-    for row in rgba_values:
-        for pixel in row:
-            draw_pixel(surface, x, y, pixel)
-            x += 1
-        x = 0
-        y += 1
-
-        #print(f"row {y}/{len(rgba_values)}")"""
-
     width, height = size
     i = 0
 
@@ -140,49 +130,16 @@ def draw_image(surface: pygame.Surface, size: tuple[int, int], rgba_values: list
             i += 1
 
 
-
-def get_rgb_from_timf_data(size: tuple[int, int], raw_timf_data: str) -> list:
-
-    """# check if the file exists
-    if not os.path.exists(timf_path):
-        return False # the timf file doesn't exist
-
-    # get the timf data
-    with open(timf_path, "r") as file:
-        timf_file_data = file.read()
+def get_rgb_from_timf_data(raw_timf_data: str) -> list[tuple[int, int, int, int]]:
+    """
+    Extracts rgba values of pixels from the timf data. Returns it in a list of tuple (each tuple is a pixel).
+    :param raw_timf_data: The timf data we want to extract the pixel values.
+    :return: A list of tuple containing integers
+    """
 
     rgba_values = []
-
-    # separate the header from the data
-    header = timf_file_data[:36]  # header is the 36 first chars (0 to 35th)
-    compressed_timf_data = timf_file_data[36:]
-
-    # extract information from the timf header
-    reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
-
-    # uncompressing the data to be able to use it
-    raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]"""
-
-    width, height = size
-
-    rgba_values = []
-    row = []
 
     # cycle through raw timf data 8 by 8 characters and converting it to RGBA values to put them in the new image
-    """for y in range(height):
-        row = []
-        for x in range(width):
-
-            index = x + y*height
-            pixel_hex = raw_timf_data[index*8:(index+1)*8]
-
-            rgba = hex_to_rgba(pixel_hex)
-
-            row.append(rgba)
-
-        rgba_values.append(row)"""
-
-
     for i in range(len(raw_timf_data)//8):
 
         pixel_hex = raw_timf_data[i*8:(i+1)*8]
@@ -205,7 +162,6 @@ def visualize_timf_image(timf_path: str) -> None:
     # separate the header from the data
     header = timf_file_data[:36]  # header is the 36 first chars (0 to 35th)
     compressed_timf_data = timf_file_data[36:]
-    print(f"{len(compressed_timf_data) = }")
 
     # extract information from the timf header
     reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
@@ -213,12 +169,11 @@ def visualize_timf_image(timf_path: str) -> None:
     # uncompressing the data to be able to use it
     raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]
 
-    print(f"{len(raw_timf_data) = }")
-
+    # create the visualizer window surface
     window = pygame.display.set_mode((width, height))
 
     # draw the image
-    draw_image(window, (width, height), get_rgb_from_timf_data((width, height), raw_timf_data))
+    draw_image(window, (width, height), get_rgb_from_timf_data(raw_timf_data))
 
     run = True
     while run:
@@ -228,7 +183,6 @@ def visualize_timf_image(timf_path: str) -> None:
                 run = False
 
         pygame.display.flip()
-
     pygame.quit()
 
 
