@@ -4,7 +4,7 @@ import pygame
 
 pygame.init()
 
-# en realité le fichier .exe sera exécuté en console comme ceci :C:\chemin\vers\timf_visualizer.exe "C:\chemin\vers\image.timf"
+# en réalité le fichier .exe sera exécuté en console comme ceci :C:\chemin\vers\timf_visualizer.exe "C:\chemin\vers\image.timf"
 # sys.argv est la liste des éléments de la commande donc :
 # sys.argv[0] = "C:\chemin\vers\timf_visualizer.exe"
 # sys.argv[1] = "C:\chemin\vers\image.timf"
@@ -15,8 +15,10 @@ else:
     print("No file path provided. Please provide a .timf file path as a command line argument.")
     sys.exit(1)"""
 
-file_to_show = "C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.timf"
+file_to_show = "C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf"
 
+
+# utils
 def hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:
     """ Convert HEX color to RGBA format. """
     hex_color = hex_color.lstrip('#')
@@ -62,13 +64,13 @@ def extract_info_from_timf_header(header: str) -> tuple[str, int, int]:
             height)
 
 
-def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
+def uncompress_timf_data(compressed_timf_data: str, debug_prints: bool = False) -> tuple[bool, str]:
     """
     This function uncompresses compressed .timf data and returns it. Also returns a boolean indicating if
     the decompression was successful. If not, it returns False and the compressed data is returned.
     If the decompression fails, it returns the compressed data instead of the uncompressed.
 
-    :param timf_data: This is the compressed .timf that will be uncompressed
+    :param compressed_timf_data: This is the compressed .timf that will be uncompressed
     :param debug_prints: Enables debug prints in the console
     :return: Returns the success of the decompression and the decompressed data (or compressed if fail)
     """
@@ -79,10 +81,10 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
     if debug_prints: print("Starting decompression...")
 
     # cycle through the row 8 chars by 8 chars
-    for i in range(len(timf_data) // 8):
+    for i in range(len(compressed_timf_data) // 8):
 
         # get the value of each item (pixel color) in the row
-        hex_value = timf_data[i * 8:(i + 1) * 8]
+        hex_value = compressed_timf_data[i * 8:(i + 1) * 8]
 
         # if the hex value starts with x, it's a compressed sequence, and we need to uncompress it
         if hex_value.startswith("x"):
@@ -100,7 +102,7 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
 
         # show progress
         if debug_prints: print(
-            f"It's {i / (len(timf_data) // 8) * 100:.2f}% of the image that have been uncompressed.")
+            f"It's {i / (len(compressed_timf_data) // 8) * 100:.2f}% of the image that have been uncompressed.")
 
     if debug_prints: print("Decompression finished.")
 
@@ -108,39 +110,43 @@ def uncompress_timf_data(timf_data: str, debug_prints: bool = False) -> tuple[bo
     return True, uncompressed_data
 
 
-def get_timf_size(timf_path: str) -> tuple[int, int] | None:
-    """ This function gets the size of a .timf image. It returns a tuple (width, height) or None if the file doesn't exist. """
-    if not os.path.exists(timf_path):
-        return None # the timf file doesn't exist
-    
-    with open(timf_path, "r") as file:
-        timf_file_data = file.read()
+def draw_pixel(surface: pygame.Surface, x: int, y: int, color: tuple[int, int, int, int]):
+    if not (0 <= x < surface.get_width() and 0 <= y < surface.get_height()):
+        return  # pixel out of bounds
 
-    rows = timf_file_data.split("00000000")
-
-    width = len(rows[0]) // 8 # each pixel is represented by 8 characters in hex (rrggbbaa)
-    height = len(rows)
-
-    return width, height
-
-window = pygame.display.set_mode(get_timf_size(file_to_show))
+    surface.set_at((x, y), pygame.Color(*color))
 
 
-def draw_pixel(x: int, y: int, color: tuple[int, int, int, int]):
-   
-    if not (0 <= x < window.get_width() and 0 <= y < window.get_height()):
-        return # pixel out of bounds
-    
-    window.set_at((x, y), pygame.Color(*color))
+def draw_image(surface: pygame.Surface, size: tuple[int, int], rgba_values: list[tuple[int, int, int, int]]):
+    """ Draw the image represented by the list of RGBA values. """
+
+    """x, y = 0, 0
+    for row in rgba_values:
+        for pixel in row:
+            draw_pixel(surface, x, y, pixel)
+            x += 1
+        x = 0
+        y += 1
+
+        #print(f"row {y}/{len(rgba_values)}")"""
+
+    width, height = size
+    i = 0
+
+    for y in range(height):
+        for x in range(width):
+
+            draw_pixel(surface, x, y, rgba_values[i])
+            i += 1
 
 
 
-def get_rgb_from_timf(timf_path: str) -> list:
+def get_rgb_from_timf_data(size: tuple[int, int], raw_timf_data: str) -> list:
 
-    # check if the file exists
+    """# check if the file exists
     if not os.path.exists(timf_path):
         return False # the timf file doesn't exist
-    
+
     # get the timf data
     with open(timf_path, "r") as file:
         timf_file_data = file.read()
@@ -155,10 +161,15 @@ def get_rgb_from_timf(timf_path: str) -> list:
     reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
 
     # uncompressing the data to be able to use it
-    raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]
+    raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]"""
+
+    width, height = size
+
+    rgba_values = []
+    row = []
 
     # cycle through raw timf data 8 by 8 characters and converting it to RGBA values to put them in the new image
-    for y in range(height):
+    """for y in range(height):
         row = []
         for x in range(width):
 
@@ -169,31 +180,57 @@ def get_rgb_from_timf(timf_path: str) -> list:
 
             row.append(rgba)
 
-        rgba_values.append(row)
+        rgba_values.append(row)"""
+
+
+    for i in range(len(raw_timf_data)//8):
+
+        pixel_hex = raw_timf_data[i*8:(i+1)*8]
+
+        rgba_values.append(hex_to_rgba(pixel_hex))
 
     return rgba_values
 
 
-def draw_image(rgba_values: list[list[tuple[int, ...]] | bool]):
-    """ Draw the image represented by the list of RGBA values. """
-    x, y = 0, 0
-    for row in rgba_values:
-        for pixel in row:
-            draw_pixel(x, y, pixel)
-            x += 1
-        x = 0
-        y += 1
+def visualize_timf_image(timf_path: str) -> None:
 
-run = True
+    # check if the file exists
+    if not os.path.exists(timf_path):
+        raise FileNotFoundError(f"The {timf_path} file doesn't exist.")  # the timf file doesn't exist
 
-draw_image(get_rgb_from_timf(file_to_show))
+    # get the timf data
+    with open(timf_path, "r") as file:
+        timf_file_data = file.read()
 
-while run:
-    # quitting loop
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-    
-    pygame.display.flip()
+    # separate the header from the data
+    header = timf_file_data[:36]  # header is the 36 first chars (0 to 35th)
+    compressed_timf_data = timf_file_data[36:]
+    print(f"{len(compressed_timf_data) = }")
 
-pygame.quit()
+    # extract information from the timf header
+    reconstructed_magic_number, width, height = extract_info_from_timf_header(header)
+
+    # uncompressing the data to be able to use it
+    raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]
+
+    print(f"{len(raw_timf_data) = }")
+
+    window = pygame.display.set_mode((width, height))
+
+    # draw the image
+    draw_image(window, (width, height), get_rgb_from_timf_data((width, height), raw_timf_data))
+
+    run = True
+    while run:
+        # quitting loop
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+        pygame.display.flip()
+
+    pygame.quit()
+
+
+path = "C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.timf"
+visualize_timf_image(path)
