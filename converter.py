@@ -35,26 +35,36 @@ def get_timf_data_from_timf_file(timf_file_path: str) -> str | None:
     return timf_file_data
 
 
-def get_pixels_from_png(png_path: str) -> list[tuple[int, ...]] | None:
+def get_pixels_from_png(png_path: str, hex_pixel: bool = False, debug_prints: bool = False) -> list[tuple[int, ...]] | str:
     """
     This function simply extracts the pixels and their values from a png file and returns it
     in a list of tuples.
     :param png_path: The path to the png image we want to get the pixel values from;
-    :return: Returns a list of tuples (list of pixels values)
+    :param hex_pixel: If true, directly return the pixels values in hexadecimal in a string
+    :param debug_prints: Enables debug prints in the console
+    :return: Returns a list of tuples (list of pixels values) or a unique string of pixels in hexadecimal
     """
 
     # check if the file exists
     if not os.path.exists(png_path):
         return None  # the timf file doesn't exist
 
-    pixels_list = []
+    if hex_pixel:
+        pixels_list = ""
+    else:
+        pixels_list = []
 
     png_img = Image.open(png_path).convert("RGBA")
 
     for y in range(png_img.height): # MAY BE IMPROVED by converting in hex directly in this loop
         for x in range(png_img.width): # instead of cycling again after
 
-            pixels_list.append(png_img.getpixel((x, y)))
+            if hex_pixel:
+                pixels_list += format_hex_for_timf(rgba_to_hex(png_img.getpixel((x, y))))
+            else:
+                pixels_list.append(png_img.getpixel((x, y)))
+
+        if debug_prints: print(f"Row {y}/{png_img.height} extracted.")
 
     return pixels_list
 
@@ -254,29 +264,38 @@ def convert_png_to_timf(png_path: str, overwrite: bool=False, debug_prints: bool
     """
 
     # get pixels values from the png
-    image_pixels = get_pixels_from_png(png_path)
+    #image_pixels = get_pixels_from_png(png_path, debug_prints)
+    raw_timf_data = get_pixels_from_png(png_path, True, debug_prints)
+
+    #if debug_prints: print("All pixels extracted...")
 
     # convert these pixels into .timf raw data
-    raw_timf_data = ""
+    #raw_timf_data = ""
+    """if debug_prints: print("Starting conversion...")
+    i = 0
     for pixel in image_pixels:
-
+        i += 1
         hex_pixel = rgba_to_hex(pixel)
         hex_pixel = format_hex_for_timf(hex_pixel)
 
         raw_timf_data += hex_pixel
+        if i % 250_000 == 0:
+            print("2500 more pixels have been converted")
 
-    if debug_prints: print("Starting conversion...")
+    if debug_prints: print("Conversion ended...")"""
+
+    if debug_prints: print("Starting compression...")
 
     # compress the .timf raw data
-    compression_success, compressed_timf_data = compress_timf_data(raw_timf_data)
+    compression_success, compressed_timf_data = compress_timf_data(raw_timf_data, debug_prints)
+
+    if debug_prints: print("Compression is done...")
 
     # create the .timf file header
     timf_header = create_timf_header(png_path)
 
     # merge the header with the .timf data (compressed)
     timf_file_data = timf_header + compressed_timf_data
-
-    if debug_prints: print("Conversion finished.")
 
     # create the .timf file path
     folder_path = os.path.dirname(png_path)
@@ -368,7 +387,7 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
     return True
 
 
-print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.png", debug_prints=False))
+print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/test_images/1080p_test.png", debug_prints=True))
 
-print(convert_timf_to_png("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf", debug_prints=False))
+#print(convert_timf_to_png("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf", debug_prints=False))
 
