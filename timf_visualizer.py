@@ -1,5 +1,7 @@
 
 import os, sys
+from operator import truediv
+
 import pygame
 
 pygame.init()
@@ -169,22 +171,94 @@ def visualize_timf_image(timf_path: str) -> None:
     # uncompressing the data to be able to use it
     raw_timf_data = uncompress_timf_data(compressed_timf_data)[1]
 
+
     # create the visualizer window surface
-    window = pygame.display.set_mode((width, height))
+    window = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+    pygame.display.set_caption("TIMF File Visualizer")
+    clock = pygame.time.Clock()
+
+    # the surface that contains the image we want to display
+    original_image_surface = pygame.surface.Surface((width, height))
+    image_surface = original_image_surface
+    image_surface_rect = image_surface.get_rect()
+    size = (width, height)
+
+    arrow_move_speed = 3
+    zoom_factor = 1
+    image_x, image_y = 0, 0
 
     # draw the image
-    draw_image(window, (width, height), get_rgb_from_timf_data(raw_timf_data))
+    draw_image(original_image_surface, (width, height), get_rgb_from_timf_data(raw_timf_data))
 
     run = True
     while run:
-        # quitting loop
+
+        # make the visualizer background black
+        window.fill("black")
+        # display the image on the visualizer window
+        window.blit(image_surface, (image_x, image_y))
+
+        if image_surface_rect.collidepoint(pygame.mouse.get_pos()):
+            mouse_on_image = True
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+        else:
+            mouse_on_image = False
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+        # if the left mouse button is being hold
+        if pygame.mouse.get_pressed()[0] and mouse_on_image:
+            relative_mouse_movement = pygame.mouse.get_rel()
+            image_x += relative_mouse_movement[0]
+            image_y += relative_mouse_movement[1]
+        else:
+            rel_mov = pygame.mouse.get_rel()
+
+
+        # inputs loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
 
+            if event.type == pygame.MOUSEWHEEL:
+                # calculate the zoom factor and apply it to the image size
+                zoom_factor += (0.1*event.y)
+
+                size = width * zoom_factor, height * zoom_factor
+                # get the center of the image (before zooming)
+                image_surface_center = (image_x + image_surface.get_width() // 2,
+                                        image_y + image_surface.get_height() // 2)
+
+                # scale the image
+                image_surface = pygame.transform.smoothscale(original_image_surface, size)
+                # place the image to the center of its previous state
+                image_x = image_surface_center[0] - image_surface.get_width() // 2
+                image_y = image_surface_center[1] - image_surface.get_height() // 2
+
+
+        # inputs (these allow us to hold a key)
+        pressed = pygame.key.get_pressed()
+
+        if pressed[pygame.K_UP]:
+            image_y += arrow_move_speed
+        elif pressed[pygame.K_DOWN]:
+            image_y -= arrow_move_speed
+        elif pressed[pygame.K_LEFT]:
+            image_x += arrow_move_speed
+        elif pressed [pygame.K_RIGHT]:
+            image_x -= arrow_move_speed
+
+        # update the rect size
+        image_surface_rect = image_surface.get_rect()
+        # update the rect position
+        image_surface_rect.x = image_x
+        image_surface_rect.y = image_y
+
         pygame.display.flip()
+        print(clock.get_fps())
+        clock.tick(100)
+
     pygame.quit()
 
 
-path = "C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image.timf"
+path = "C:/Users/timot/Desktop/MyOwnExtension/test_images/1080p_test.timf"
 visualize_timf_image(path)
