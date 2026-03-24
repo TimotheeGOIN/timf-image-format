@@ -177,15 +177,19 @@ def visualize_timf_image(timf_path: str) -> None:
     pygame.display.set_caption("TIMF File Visualizer")
     clock = pygame.time.Clock()
 
+    # create gray zone
+    gray_zone = pygame.surface.Surface((width, height))
+    gray_zone.fill("gray")
+
     # the surface that contains the image we want to display
     original_image_surface = pygame.surface.Surface((width, height))
     image_surface = original_image_surface
     image_surface_rect = image_surface.get_rect()
+
     original_size = (width, height)
     size = original_size
 
     arrow_move_speed = 3
-    zoom_factor = 1
     image_x, image_y = 0, 0
 
     # draw the image
@@ -196,6 +200,8 @@ def visualize_timf_image(timf_path: str) -> None:
 
         # make the visualizer background black
         window.fill("black")
+        # display the gray zone
+        #window.blit(gray_zone, (window.get_width()//2 - gray_zone.get_width()//2, window.get_height()//2 - gray_zone.get_height()//2))
         # display the image on the visualizer window
         window.blit(image_surface, (image_x, image_y))
 
@@ -212,7 +218,8 @@ def visualize_timf_image(timf_path: str) -> None:
             image_x += relative_mouse_movement[0]
             image_y += relative_mouse_movement[1]
         else:
-            rel_mov = pygame.mouse.get_rel()
+            # reset mouse relative movement
+            pygame.mouse.get_rel()
 
 
         # inputs loop
@@ -220,25 +227,35 @@ def visualize_timf_image(timf_path: str) -> None:
             if event.type == pygame.QUIT:
                 run = False
 
-            if event.type == pygame.MOUSEWHEEL:
-                # calculate the zoom factor and apply it to the image size
-                zoom_factor += (0.1*event.y)
-
-                # calculate the
-                grow = (width * zoom_factor) / size[0]
-
-                size = width * zoom_factor, height * zoom_factor
-
+            if event.type == pygame.MOUSEWHEEL and mouse_on_image:
                 mouse_pos = pygame.mouse.get_pos()
 
-                distance_mouse_image = ((pygame.mouse.get_pos()[0] - image_x)*grow,
-                                        (pygame.mouse.get_pos()[1] - image_y)*grow)
+                # calculate the global zoom factor between original size and actual size
+                global_zoom = round(size[0]/original_size[0], 6)
+
+                # determine the zoom factor and apply it to the image size
+                if event.y < 0 and (4/5)**6 < global_zoom:
+                    zoom_factor = 4/5
+                elif event.y > 0 and global_zoom < (5/4)**6:
+                    zoom_factor = 5/4
+                else:
+                    zoom_factor = 1
+
+                # actualize the size
+                size = (size[0] * zoom_factor,
+                        size[1] * zoom_factor)
+
+                # get the distance between the image (topleft) and the mouse, then multiply this distance by the zoom factor
+                distance_mouse_image = ((pygame.mouse.get_pos()[0] - image_x)*zoom_factor,
+                                        (pygame.mouse.get_pos()[1] - image_y)*zoom_factor)
 
                 # scale the image
                 image_surface = pygame.transform.smoothscale(original_image_surface, size)
-                # place the image to the center of its previous state
+                # place the image at the new calculated distance
                 image_x = mouse_pos[0] - distance_mouse_image[0]
                 image_y = mouse_pos[1] - distance_mouse_image[1]
+
+                print(round(size[0]/original_size[0], 6))
 
 
         # inputs (these allow us to hold a key)
@@ -260,7 +277,7 @@ def visualize_timf_image(timf_path: str) -> None:
         image_surface_rect.y = image_y
 
         pygame.display.flip()
-        print(clock.get_fps())
+        #print(clock.get_fps())
         clock.tick(100)
 
     pygame.quit()
