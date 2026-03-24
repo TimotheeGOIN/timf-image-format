@@ -14,19 +14,15 @@ This is a compressed file format for images named TIMF (the extension is .timf).
 In the repo, there is an 'executable' folder in which there are the final apps that can be used (just the vizualiser.exe right now). The exe files are made with 
 the PyInstaller library.
 
-For now I have just done a converter (png to timf and timf to png) and a compressor that is able to compress and uncompress timf data. But eventually the uncompressed timf files will not exist anymore
-because timf will be natively compressed (lossless compression)
-
 Those are the next things I want to improve or implement :
 
 - eventually just have one file and not separated
-- improve the timf vizualizer (resizable window mainly)  
+- improve the timf vizualizer (start speed and basics QoL improvements)
+- make the conversion processus a bit faster
 
-I'm working one the file signature (this texte isn't finished yet)
-The signature will include a magic string, the width and length of the image (and maybe if the image contains transparents parts).
 
 -- Steps of the .timf file format development:
 - The .timf has now a header containing a magic number (a string actually), the width and length of the image.
 - The converter.py file handle now all the convertion (with non-optional compression) from png to timf and vice versa.
 
--- Right now I'm working on the vizualizer. To make it handle the new .timf file format (header and compressed data).
+-- Right now I'm working on the vizualizer, to make it better to use. And working on make the conversion processus faster
