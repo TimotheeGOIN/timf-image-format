@@ -181,7 +181,8 @@ def visualize_timf_image(timf_path: str) -> None:
     original_image_surface = pygame.surface.Surface((width, height))
     image_surface = original_image_surface
     image_surface_rect = image_surface.get_rect()
-    size = (width, height)
+    original_size = (width, height)
+    size = original_size
 
     arrow_move_speed = 3
     zoom_factor = 1
@@ -223,16 +224,21 @@ def visualize_timf_image(timf_path: str) -> None:
                 # calculate the zoom factor and apply it to the image size
                 zoom_factor += (0.1*event.y)
 
+                # calculate the
+                grow = (width * zoom_factor) / size[0]
+
                 size = width * zoom_factor, height * zoom_factor
-                # get the center of the image (before zooming)
-                image_surface_center = (image_x + image_surface.get_width() // 2,
-                                        image_y + image_surface.get_height() // 2)
+
+                mouse_pos = pygame.mouse.get_pos()
+
+                distance_mouse_image = ((pygame.mouse.get_pos()[0] - image_x)*grow,
+                                        (pygame.mouse.get_pos()[1] - image_y)*grow)
 
                 # scale the image
                 image_surface = pygame.transform.smoothscale(original_image_surface, size)
                 # place the image to the center of its previous state
-                image_x = image_surface_center[0] - image_surface.get_width() // 2
-                image_y = image_surface_center[1] - image_surface.get_height() // 2
+                image_x = mouse_pos[0] - distance_mouse_image[0]
+                image_y = mouse_pos[1] - distance_mouse_image[1]
 
 
         # inputs (these allow us to hold a key)
