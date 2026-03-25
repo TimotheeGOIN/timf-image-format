@@ -178,8 +178,11 @@ def visualize_timf_image(timf_path: str) -> None:
     clock = pygame.time.Clock()
 
     # create gray zone
-    gray_zone = pygame.surface.Surface((width, height))
+    original_gray_zone = pygame.surface.Surface((width, height))
+    gray_zone = original_gray_zone
     gray_zone.fill("gray")
+    gray_zone_pos = [window.get_width()//2 - gray_zone.get_width()//2,
+                     window.get_height()//2 - gray_zone.get_height()//2]
 
     # the surface that contains the image we want to display
     original_image_surface = pygame.surface.Surface((width, height))
@@ -201,10 +204,11 @@ def visualize_timf_image(timf_path: str) -> None:
         # make the visualizer background black
         window.fill("black")
         # display the gray zone
-        #window.blit(gray_zone, (window.get_width()//2 - gray_zone.get_width()//2, window.get_height()//2 - gray_zone.get_height()//2))
+        window.blit(gray_zone, gray_zone_pos)
         # display the image on the visualizer window
         window.blit(image_surface, (image_x, image_y))
 
+        # if the mouse is on the image, set the cursor to a hand and actualize mouse_on_image bool
         if image_surface_rect.collidepoint(pygame.mouse.get_pos()):
             mouse_on_image = True
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
@@ -213,10 +217,15 @@ def visualize_timf_image(timf_path: str) -> None:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
         # if the left mouse button is being hold
-        if pygame.mouse.get_pressed()[0] and mouse_on_image:
+        if pygame.mouse.get_pressed()[0]:
             relative_mouse_movement = pygame.mouse.get_rel()
             image_x += relative_mouse_movement[0]
             image_y += relative_mouse_movement[1]
+
+            if not mouse_on_image:
+                gray_zone_pos[0] += relative_mouse_movement[0]
+                gray_zone_pos[1] += relative_mouse_movement[1]
+
         else:
             # reset mouse relative movement
             pygame.mouse.get_rel()
@@ -227,7 +236,7 @@ def visualize_timf_image(timf_path: str) -> None:
             if event.type == pygame.QUIT:
                 run = False
 
-            if event.type == pygame.MOUSEWHEEL and mouse_on_image:
+            if event.type == pygame.MOUSEWHEEL:
                 mouse_pos = pygame.mouse.get_pos()
 
                 # calculate the global zoom factor between original size and actual size
@@ -256,6 +265,33 @@ def visualize_timf_image(timf_path: str) -> None:
                 image_y = mouse_pos[1] - distance_mouse_image[1]
 
                 print(round(size[0]/original_size[0], 6))
+
+                if not mouse_on_image:
+                    """# calculate the global zoom factor between original size and actual size
+                    global_zoom = round(gray_zone.get_height() / original_size[0], 6)
+
+
+                    # determine the zoom factor and apply it to the image size
+                    if event.y < 0 and (4 / 5) ** 6 < global_zoom:
+                        zoom_factor = 4 / 5
+                    elif event.y > 0 and global_zoom < (5 / 4) ** 6:
+                        zoom_factor = 5 / 4
+                    else:
+                        zoom_factor = 1"""
+
+                    # actualize the size
+                    gray_size = (gray_zone.get_width() * zoom_factor,
+                                 gray_zone.get_height() * zoom_factor)
+
+                    # get the distance between the image (topleft) and the mouse, then multiply this distance by the zoom factor
+                    distance_gray_image = ((pygame.mouse.get_pos()[0] - gray_zone_pos[0]) * zoom_factor,
+                                           (pygame.mouse.get_pos()[1] - gray_zone_pos[1]) * zoom_factor)
+
+                    # scale the image
+                    gray_zone = pygame.transform.smoothscale(original_gray_zone, gray_size)
+                    # place the image at the new calculated distance
+                    gray_zone_pos[0] = mouse_pos[0] - distance_gray_image[0]
+                    gray_zone_pos[1] = mouse_pos[1] - distance_gray_image[1]
 
 
         # inputs (these allow us to hold a key)
