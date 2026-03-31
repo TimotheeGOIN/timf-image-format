@@ -3,9 +3,6 @@ import os
 from PIL import Image
 from utils import *
 
-"""
-- The end-line character in .timf files is "00000000", so this value is not allowed in the image data.
-"""
 
 image_file_path = "C:/Users/timot/Desktop/MyOwnExtension/images/screen_lambda.png"
 magic_number = "bestformat" # obviously not
@@ -35,7 +32,7 @@ def get_timf_data_from_timf_file(timf_file_path: str) -> str | None:
     return timf_file_data
 
 
-def get_pixels_from_png(png_path: str, hex_pixel: bool = False, debug_prints: bool = False) -> list[tuple[int, ...]] | str:
+def get_pixels_from_png(png_path: str, hex_pixel: bool = False, debug_prints: bool = False) -> list[tuple[int, ...]] | str | None:
     """
     This function simply extracts the pixels and their values from a png file and returns it
     in a list of tuples.
@@ -387,7 +384,7 @@ def convert_timf_to_png(timf_path: str, overwrite: bool=False, debug_prints: boo
     return True
 
 
-print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/test_images/1080p_test.png", debug_prints=True))
+print(convert_png_to_timf("C:/Users/timot/Desktop/MyOwnExtension/ooo.png", debug_prints=True))
 
 #print(convert_timf_to_png("C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf", debug_prints=False))
 

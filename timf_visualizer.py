@@ -1,7 +1,5 @@
 
 import os, sys
-from operator import truediv
-
 import pygame
 
 pygame.init()
@@ -17,7 +15,7 @@ else:
     print("No file path provided. Please provide a .timf file path as a command line argument.")
     sys.exit(1)"""
 
-file_to_show = "C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf"
+#file_to_show = "C:/Users/timot/Desktop/MyOwnExtension/test_images/sot_ref_image_2.timf"
 
 
 # utils
@@ -319,5 +317,5 @@ def visualize_timf_image(timf_path: str) -> None:
     pygame.quit()
 
 
-path = "C:/Users/timot/Desktop/MyOwnExtension/test_images/1080p_test.timf"
+path = "C:/Users/timot/Desktop/MyOwnExtension/ooo.timf"
 visualize_timf_image(path)
